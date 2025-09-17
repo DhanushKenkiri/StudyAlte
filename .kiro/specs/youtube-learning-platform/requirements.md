@@ -2,104 +2,109 @@
 
 ## Introduction
 
-The YouTube Learning Platform is a web application that transforms passive YouTube video consumption into active, structured learning experiences. The platform leverages AI to automatically analyze video content and generate comprehensive learning materials including summaries, flashcards, quizzes, mind maps, and organized notes. This system is designed to help students, professionals, and lifelong learners maximize their educational outcomes from free YouTube content by converting it into course-like, interactive study sessions with progress tracking and content organization capabilities.
+StudyAlte is an AI-powered question paper generation platform that transforms educational content into comprehensive study materials. The platform leverages advanced AI technologies including Google Gemini and AWS Bedrock to automatically analyze uploaded documents, generate question papers, create interactive summaries, mind maps, and flashcards. This system is designed to help educators, students, and institutions streamline the assessment creation process while providing enhanced learning tools for effective exam preparation and knowledge retention.
 
 ## Requirements
 
-### Requirement 1: Video Content Processing
+### Requirement 1: Document Content Processing and Analysis
 
-**User Story:** As a learner, I want to input a YouTube video URL and have the system automatically extract and process the video content, so that I can quickly access structured learning materials without manual effort.
-
-#### Acceptance Criteria
-
-1. WHEN a user provides a valid YouTube URL THEN the system SHALL extract the video transcript using YouTube's API or transcription services
-2. WHEN the video transcript is extracted THEN the system SHALL process the content using NLP algorithms to identify key concepts, definitions, and learning objectives
-3. IF the video has no available transcript THEN the system SHALL use speech-to-text conversion to generate one
-4. WHEN content processing is complete THEN the system SHALL create a learning capsule containing all generated materials
-5. IF the video URL is invalid or inaccessible THEN the system SHALL display an appropriate error message and suggest troubleshooting steps
-
-### Requirement 2: AI-Generated Learning Materials
-
-**User Story:** As a student, I want the system to automatically generate comprehensive study materials from video content, so that I can engage with the material through multiple learning modalities.
+**User Story:** As an educator, I want to upload educational documents (PDFs, Word files, images, text) and have the system automatically extract and analyze the content, so that I can quickly generate assessment materials without manual content review.
 
 #### Acceptance Criteria
 
-1. WHEN video content is processed THEN the system SHALL generate a concise summary highlighting key concepts and main points
-2. WHEN key concepts are identified THEN the system SHALL create interactive flashcards for active recall practice
-3. WHEN learning objectives are extracted THEN the system SHALL generate quiz questions with multiple choice and short answer formats
-4. WHEN complex topics are detected THEN the system SHALL create mind maps showing concept relationships and hierarchies
-5. WHEN the video contains structured information THEN the system SHALL organize it into searchable, categorized notes
-6. WHEN all materials are generated THEN the system SHALL ensure consistency and accuracy across all learning components
+1. WHEN a user uploads supported file formats (PDF, DOC, DOCX, TXT, JPG, PNG, GIF) THEN the system SHALL extract text content using appropriate parsing libraries
+2. WHEN content is extracted THEN the system SHALL process it using Google Gemini AI to identify key concepts, topics, and learning objectives
+3. WHEN images are uploaded THEN the system SHALL use Gemini's vision capabilities to analyze and extract text and conceptual information
+4. WHEN content analysis is complete THEN the system SHALL categorize content by subject, difficulty level, and question types
+5. IF file upload fails or format is unsupported THEN the system SHALL display appropriate error messages and supported format guidelines
 
-### Requirement 3: Interactive Learning Interface
+### Requirement 2: AI-Generated Question Papers
 
-**User Story:** As a user, I want to interact with the generated learning materials through an intuitive interface, so that I can actively engage with the content and improve retention.
-
-#### Acceptance Criteria
-
-1. WHEN accessing flashcards THEN the system SHALL provide spaced repetition functionality with difficulty tracking
-2. WHEN taking quizzes THEN the system SHALL provide immediate feedback and explanations for answers
-3. WHEN viewing transcripts THEN the system SHALL provide clickable timestamps that jump to specific video segments
-4. WHEN exploring mind maps THEN the system SHALL allow interactive navigation and concept expansion
-5. WHEN reviewing notes THEN the system SHALL support highlighting, annotation, and personal note addition
-6. WHEN using any interactive element THEN the system SHALL maintain responsive design across desktop and mobile devices
-
-### Requirement 4: AI Tutor Chat Interface
-
-**User Story:** As a learner, I want to ask questions about the video content through a chat interface, so that I can get instant clarification and deeper insights about the material.
+**User Story:** As an educator, I want the system to automatically generate comprehensive question papers from analyzed content, so that I can create assessments that match specific exam patterns and difficulty levels.
 
 #### Acceptance Criteria
 
-1. WHEN a user asks a question about video content THEN the AI tutor SHALL provide contextually relevant answers based on the processed material
-2. WHEN the AI tutor responds THEN it SHALL reference specific parts of the video or generated materials when applicable
-3. WHEN a question is ambiguous THEN the system SHALL ask clarifying questions to provide better assistance
-4. WHEN the AI cannot answer a question THEN it SHALL acknowledge limitations and suggest alternative resources
-5. WHEN chat history exists THEN the system SHALL maintain conversation context for follow-up questions
+1. WHEN content is processed THEN the system SHALL use AWS Bedrock agents to generate questions based on detected subject area (Electrical Engineering, Mathematics, General)
+2. WHEN question generation is initiated THEN the system SHALL create papers with multiple question types (MCQ, short answer, long answer, numerical)
+3. WHEN paper patterns are detected THEN the system SHALL match questions to specific exam formats and mark distributions
+4. WHEN questions are generated THEN the system SHALL ensure appropriate difficulty distribution and topic coverage
+5. WHEN generation is complete THEN the system SHALL provide downloadable question papers in structured JSON format
+6. WHEN regeneration is requested THEN the system SHALL create alternative questions while maintaining pattern consistency
 
-### Requirement 5: Content Organization and Search
+### Requirement 3: Interactive Study Materials Generation
 
-**User Story:** As a user with multiple learning capsules, I want to organize and search through my content efficiently, so that I can easily revisit and build upon previous learning.
-
-#### Acceptance Criteria
-
-1. WHEN learning capsules are created THEN the system SHALL automatically tag them with relevant topics and categories
-2. WHEN users search for content THEN the system SHALL provide results across summaries, notes, flashcards, and quiz content
-3. WHEN organizing content THEN the system SHALL allow custom tags, folders, and categorization
-4. WHEN filtering content THEN the system SHALL support multiple filter criteria including date, topic, difficulty, and completion status
-5. WHEN accessing organized content THEN the system SHALL maintain fast search performance even with large content libraries
-
-### Requirement 6: Progress Tracking and Analytics
-
-**User Story:** As a learner, I want to track my learning progress and performance across different topics and time periods, so that I can identify areas for improvement and maintain motivation.
+**User Story:** As a student, I want the system to create interactive study materials from the same content used for question generation, so that I can prepare effectively using summaries, mind maps, and flashcards.
 
 #### Acceptance Criteria
 
-1. WHEN users complete learning activities THEN the system SHALL record progress data including time spent, accuracy rates, and completion status
-2. WHEN viewing progress THEN the system SHALL display visual dashboards showing learning streaks, topic mastery, and performance trends
-3. WHEN analyzing performance THEN the system SHALL identify knowledge gaps and suggest review materials
-4. WHEN tracking over time THEN the system SHALL provide insights on learning velocity and retention rates
-5. WHEN setting goals THEN the system SHALL allow users to define learning objectives and track progress toward them
+1. WHEN content is analyzed THEN the system SHALL generate comprehensive study summaries with key topics and concepts
+2. WHEN summaries are created THEN the system SHALL provide detailed explanations, importance ratings, and study time estimates
+3. WHEN complex topics are identified THEN the system SHALL create interactive mind maps using Mermaid diagrams with tree-like structures
+4. WHEN mind maps are generated THEN the system SHALL include navigation controls, zoom functionality, and topic relationships
+5. WHEN flashcard generation is requested THEN the system SHALL create cards with questions, answers, difficulty levels, and topic categorization
+6. WHEN study materials are complete THEN the system SHALL ensure consistency with the generated question papers
 
-### Requirement 7: User Authentication and Data Management
+### Requirement 4: Session Management and History
 
-**User Story:** As a user, I want secure access to my learning materials and the ability to manage my account and data, so that my learning progress is preserved and protected.
-
-#### Acceptance Criteria
-
-1. WHEN creating an account THEN the system SHALL require secure authentication with email verification
-2. WHEN logging in THEN the system SHALL support secure session management with appropriate timeout policies
-3. WHEN storing user data THEN the system SHALL encrypt sensitive information and comply with privacy regulations
-4. WHEN users request data export THEN the system SHALL provide their learning materials in standard formats
-5. WHEN users delete their account THEN the system SHALL securely remove all associated data while maintaining anonymized analytics
-
-### Requirement 8: Performance and Scalability
-
-**User Story:** As a user, I want the application to respond quickly and reliably regardless of the number of videos I process, so that my learning experience remains smooth and efficient.
+**User Story:** As a user, I want to save my content analysis sessions and access previously generated materials, so that I can continue working on assessments and review past work efficiently.
 
 #### Acceptance Criteria
 
-1. WHEN processing video content THEN the system SHALL complete analysis within 2 minutes for videos up to 60 minutes long
-2. WHEN multiple users access the system THEN it SHALL maintain response times under 3 seconds for interactive elements
-3. WHEN the system experiences high load THEN it SHALL gracefully handle traffic spikes without service degradation
-4. WHEN storing large amounts of content THEN the system SHALL implement efficient data storage and retrieval mechanisms
-5. WHEN scaling infrastructure THEN the system SHALL support horizontal scaling to accommodate user growth
+1. WHEN users authenticate with Google THEN the system SHALL save their session data to Firebase Realtime Database
+2. WHEN content is analyzed THEN the system SHALL create a unique session with timestamp and user identification
+3. WHEN users access history THEN the system SHALL display saved sessions with titles, subjects, and creation dates
+4. WHEN a historical session is selected THEN the system SHALL restore all previously generated content (summaries, question papers, mind maps, flashcards)
+5. WHEN session data is loaded THEN the system SHALL allow users to regenerate or modify existing materials
+6. WHEN users work across devices THEN the system SHALL synchronize session data in real-time
+
+### Requirement 5: User Authentication and Authorization
+
+**User Story:** As a platform user, I want to securely authenticate and manage my account, so that my generated content and session history remain private and accessible across devices.
+
+#### Acceptance Criteria
+
+1. WHEN users want to access the platform THEN the system SHALL provide Google OAuth authentication
+2. WHEN authentication is successful THEN the system SHALL create user profiles with display name and email
+3. WHEN users are authenticated THEN the system SHALL allow access to personal history and saved sessions
+4. WHEN users sign out THEN the system SHALL clear local session data while preserving cloud storage
+5. WHEN unauthenticated users access the platform THEN the system SHALL provide limited functionality without history saving
+6. WHEN authentication fails THEN the system SHALL provide clear error messages and retry options
+
+### Requirement 6: Real-time Progress Tracking and Feedback
+
+**User Story:** As a user, I want to see real-time progress updates during content processing, so that I understand the system status and estimated completion times.
+
+#### Acceptance Criteria
+
+1. WHEN content processing starts THEN the system SHALL display progress bars with stage indicators
+2. WHEN processing stages change THEN the system SHALL update progress messages (analyzing files, generating content, finalizing)
+3. WHEN processing takes longer than expected THEN the system SHALL provide estimated time remaining
+4. WHEN errors occur during processing THEN the system SHALL provide specific error messages and retry options
+5. WHEN network issues are detected THEN the system SHALL display connection status and offline capabilities
+6. WHEN processing completes THEN the system SHALL provide success confirmations and next action suggestions
+
+### Requirement 7: Responsive Design and User Experience
+
+**User Story:** As a user accessing the platform from different devices, I want a consistent and intuitive interface that works seamlessly on desktop, tablet, and mobile devices.
+
+#### Acceptance Criteria
+
+1. WHEN accessing the platform on any device THEN the system SHALL provide responsive design with appropriate layouts
+2. WHEN using touch devices THEN the system SHALL support touch gestures for navigation and interaction
+3. WHEN screen size changes THEN the system SHALL adapt component layouts and font sizes appropriately
+4. WHEN loading content THEN the system SHALL provide loading states and skeleton screens
+5. WHEN errors occur THEN the system SHALL display user-friendly error messages with actionable suggestions
+6. WHEN using the interface THEN the system SHALL maintain accessibility standards for users with disabilities
+
+### Requirement 8: Content Export and Sharing
+
+**User Story:** As an educator, I want to export generated question papers and study materials in various formats, so that I can use them in different educational contexts and share with students.
+
+#### Acceptance Criteria
+
+1. WHEN question papers are generated THEN the system SHALL provide JSON download functionality
+2. WHEN summaries are created THEN the system SHALL allow export as formatted text files
+3. WHEN mind maps are generated THEN the system SHALL provide export options for images and Mermaid code
+4. WHEN flashcards are created THEN the system SHALL support export in standard flashcard formats
+5. WHEN exporting content THEN the system SHALL maintain formatting and include metadata (generation date, source, AI model used)
+6. WHEN sharing is requested THEN the system SHALL provide secure links for collaborative access (future enhancement)

@@ -2,7 +2,7 @@
 
 ## Overview
 
-The YouTube Learning Platform is a React-based web application that leverages AWS services and AI/ML capabilities to transform YouTube videos into interactive learning experiences. The system follows a microservices architecture with serverless components, ensuring scalability, cost-effectiveness, and maintainability. The platform integrates multiple AI services for content processing, natural language understanding, and personalized learning recommendations.
+StudyAlte is a React TypeScript-based web application that leverages Google Gemini AI and AWS Bedrock services to transform educational documents into comprehensive study materials and question papers. The system follows a modern frontend architecture with serverless backend integration, ensuring scalability, cost-effectiveness, and maintainability. The platform integrates multiple AI services for content analysis, question generation, and interactive learning material creation.
 
 ## Architecture
 
@@ -11,87 +11,249 @@ The YouTube Learning Platform is a React-based web application that leverages AW
 ```mermaid
 graph TB
     subgraph "Frontend Layer"
-        A[React Web App]
-        B[Material-UI Components]
-        C[State Management - Redux Toolkit]
+        A[React TypeScript App]
+        B[Lucide React Icons]
+        C[State Management - React Hooks]
+        D[CSS Modules & Responsive Design]
     end
     
-    subgraph "API Gateway Layer"
-        D[AWS API Gateway]
-        E[Authentication - AWS Cognito]
+    subgraph "Authentication Layer"
+        E[Firebase Authentication]
+        F[Google OAuth Integration]
     end
     
-    subgraph "Backend Services"
-        F[Video Processing Service]
-        G[AI Content Generation Service]
-        H[User Management Service]
-        I[Progress Tracking Service]
-    end
-    
-    subgraph "AI/ML Services"
-        J[AWS Transcribe]
-        K[AWS Comprehend]
-        L[OpenAI GPT-4 API]
-        M[Custom NLP Models]
+    subgraph "AI Processing Services"
+        G[Google Gemini API]
+        H[AWS Bedrock Agents]
+        I[Content Analysis Service]
+        J[Question Generation Service]
     end
     
     subgraph "Data Layer"
-        N[DynamoDB - User Data]
-        O[S3 - Media Storage]
-        P[ElasticSearch - Content Search]
+        K[Firebase Realtime Database]
+        L[Session Management]
+        M[User Profiles & History]
     end
     
-    subgraph "External APIs"
-        Q[YouTube Data API v3]
-        R[YouTube Transcript API]
+    subgraph "Deployment Layer"
+        N[Firebase Hosting]
+        O[Build Optimization]
+        P[CDN Distribution]
     end
     
-    A --> D
-    D --> F
-    D --> G
-    D --> H
-    D --> I
-    F --> J
-    F --> Q
-    F --> R
-    G --> K
-    G --> L
-    G --> M
-    H --> N
-    I --> N
-    F --> O
-    G --> P
+    A --> E
+    E --> F
+    A --> G
+    A --> H
+    G --> I
+    H --> J
+    A --> K
+    K --> L
+    K --> M
+    A --> N
+    N --> O
+    N --> P
 ```
 
 ### Technology Stack
 
 **Frontend:**
 - React 18 with TypeScript
-- Material-UI (MUI) for component library
-- Redux Toolkit for state management
-- React Query for server state management
+- Create React App for build tooling
+- Lucide React for icons
+- Custom CSS with responsive design
+- React Hooks for state management
 - React Router for navigation
-- Framer Motion for animations
+- KaTeX for mathematical notation rendering
 
-**Backend:**
-- AWS Lambda (Node.js/TypeScript)
-- AWS API Gateway for REST APIs
-- AWS Cognito for authentication
-- AWS DynamoDB for NoSQL database
-- AWS S3 for file storage
-- AWS CloudFront for CDN
+**Authentication:**
+- Firebase Authentication
+- Google OAuth 2.0 integration
+- Context API for auth state management
 
 **AI/ML Services:**
-- AWS Transcribe for speech-to-text
-- AWS Comprehend for NLP analysis
-- OpenAI GPT-4 API for content generation
-- AWS SageMaker for custom ML models
+- Google Gemini API for content analysis and image processing
+- AWS Bedrock for specialized question generation
+- Custom agent selection based on subject area
+
+**Data Storage:**
+- Firebase Realtime Database for user sessions
+- Local state management for temporary data
+- Browser storage for offline capabilities
+
+**Deployment:**
+- Firebase Hosting for production deployment
+- Automated build and deployment pipeline
+- CDN distribution for global performance
 
 ## Components and Interfaces
 
 ### Frontend Components
 
-#### Core Components
+```tsx
+// App.tsx - Main application component
+interface AppProps {
+  user: User | null;
+  authLoading: boolean;
+  authError: string | null;
+}
+
+// Core UI Components
+interface NavigationTabProps {
+  id: string;
+  name: string;
+  icon: React.ComponentType;
+  description: string;
+}
+
+interface UploadedFile {
+  name: string;
+  size: number;
+  type: string;
+  content: string;
+  isImage: boolean;
+}
+```
+
+#### Study Material Components
+
+```tsx
+// SummaryComponent.tsx
+interface SummaryComponentProps {
+  analysisResult: AnalysisResult | null;
+  promptId?: string;
+  loadedSummaryData?: SummaryData;
+}
+
+// MindMapComponent.tsx
+interface MindMapComponentProps {
+  analysisResult: AnalysisResult | null;
+  promptId?: string;
+  loadedMindMapData?: BedrockFlashCardSet;
+}
+
+// FlashCardComponent.tsx
+interface FlashCardComponentProps {
+  analysisResult: AnalysisResult | null;
+  promptId?: string;
+  loadedFlashCardSet?: FlashCardSet;
+}
+```
+
+#### Question Generation Components
+
+```tsx
+// QuestionPaperDisplay.tsx
+interface QuestionPaperDisplayProps {
+  questionPaper: QuestionPaper;
+}
+
+// HistoryComponent.tsx
+interface HistoryComponentProps {
+  onRegenerateFromPrompt: (analysisResult: AnalysisResult, title: string) => void;
+  onLoadSession: (historyItem: PromptHistory) => void;
+  onClose: () => void;
+}
+```
+
+### Service Interfaces
+
+#### AI Analysis Service
+
+```tsx
+// geminiService.ts
+interface AnalysisResult {
+  analysis: {
+    subject: string;
+    topics: string[];
+    difficulty: 'easy' | 'medium' | 'hard' | 'expert';
+    confidence: number;
+    extractedQuestions?: string[];
+    questionPatterns?: string[];
+    documentTypes?: string[];
+    markingSchemes?: string[];
+    languageStyle?: string;
+    parsedRequirements?: ParsedRequirements;
+  };
+  threePrompts: {
+    summaryPrompt: string;
+    flashcardPrompt: string;
+    mindmapPrompt: string;
+  };
+  paperPattern: string;
+  contentQuality: number;
+  processingTime: number;
+}
+
+interface SummaryData {
+  title: string;
+  subject: string;
+  keyTopics: string[];
+  mainConcepts: {
+    topic: string;
+    description: string;
+    importance: string;
+  }[];
+  studyGuide: {
+    section: string;
+    points: string[];
+  }[];
+  timeEstimate: string;
+  difficulty: string;
+  generatedBy: string;
+  timestamp: string;
+}
+```
+
+#### AWS Bedrock Service
+
+```tsx
+// bedrockService.ts
+interface BedrockAgent {
+  id: string;
+  name: string;
+  description: string;
+  subjects: string[];
+  capabilities: string[];
+}
+
+interface QuestionPaper {
+  title: string;
+  subject: string;
+  difficulty: string;
+  totalQuestions: number;
+  totalMarks: number;
+  duration: string;
+  sections: QuestionSection[];
+  generatedBy: string;
+  timestamp: string;
+}
+```
+
+#### Database Service
+
+```tsx
+// databaseService.ts
+interface PromptHistory {
+  id: string;
+  title: string;
+  subject: string;
+  createdAt: string;
+  lastUsed: string;
+  analysisResult: AnalysisResult;
+}
+
+interface SessionData {
+  prompt: PromptHistory;
+  summaryData?: SummaryData;
+  flashCardSet?: FlashCardSet;
+  bedrockFlashCardSet?: BedrockFlashCardSet;
+  questionPaper?: QuestionPaper;
+}
+```
+
+## Data Flow and State Management
+```
 ```typescript
 // Main App Component
 interface AppProps {
@@ -465,32 +627,28 @@ describe('Complete Learning Flow', () => {
 
 ### Data Protection
 - Encryption at rest (DynamoDB, S3)
-- Encryption in transit (HTTPS, TLS)
-- PII data anonymization
-- GDPR compliance measures
+### Security Considerations
 
-### API Security
-- Rate limiting and throttling
-- Input validation and sanitization
-- CORS configuration
-- API key management for external services
+- **API Key Management**: Environment variables for all API keys
+- **Authentication**: Firebase Auth with Google OAuth
+- **Data Validation**: Input sanitization and validation
+- **Rate Limiting**: Client-side throttling for API calls
+- **Error Information**: Sanitized error messages for production
+- **Session Security**: Automatic session timeout and cleanup
 
-## Performance Optimization
+### Performance Optimization
 
-### Frontend Optimization
-- Code splitting and lazy loading
-- Image optimization and lazy loading
-- Service worker for offline functionality
-- Bundle size optimization
+- **Code Splitting**: Lazy loading for components and routes
+- **Bundle Optimization**: Tree shaking and minification
+- **Caching**: Browser caching and Firebase CDN
+- **Real-time Updates**: Optimized database queries
+- **Error Recovery**: Automatic retry mechanisms
+- **Progress Tracking**: Real-time feedback for long operations
 
-### Backend Optimization
-- Lambda cold start optimization
-- DynamoDB query optimization
-- Caching strategies (CloudFront, ElastiCache)
-- Asynchronous processing for heavy operations
+### Monitoring and Analytics
 
-### Monitoring and Observability
-- AWS CloudWatch for metrics and logs
-- AWS X-Ray for distributed tracing
-- Custom dashboards for business metrics
-- Alerting for critical system events
+- **Firebase Analytics**: User interaction tracking
+- **Error Monitoring**: Centralized error logging
+- **Performance Metrics**: Core Web Vitals monitoring
+- **Usage Analytics**: Feature adoption and user patterns
+- **A/B Testing**: Feature flag management for gradual rollouts
