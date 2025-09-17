@@ -1,0 +1,60 @@
+{
+  "name": "questionpaperanalyser",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "AI Question Paper Generator - React TypeScript application with ChatGPT-style interface",
+  "dependencies": {
+    "@aws-sdk/client-bedrock": "^3.888.0",
+    "@aws-sdk/client-bedrock-agent-runtime": "^3.888.0",
+    "@babel/runtime": "^7.28.4",
+    "@google/generative-ai": "^0.24.1",
+    "@types/node": "^24.3.3",
+    "@types/qrcode": "^1.5.5",
+    "@types/react": "^19.1.13",
+    "@types/react-dom": "^19.1.9",
+    "core-js": "^3.45.1",
+    "dotenv": "^17.2.2",
+    "firebase": "^12.2.1",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^3.0.2",
+    "katex": "^0.16.22",
+    "lodash": "^4.17.21",
+    "lucide-react": "^0.544.0",
+    "mermaid": "^11.11.0",
+    "qrcode": "^1.5.4",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "react-katex": "^3.1.0",
+    "react-markdown": "^10.1.0",
+    "react-scripts": "^5.0.1",
+    "rehype-katex": "^7.0.1",
+    "remark-math": "^6.0.0",
+    "typescript": "^4.9.5"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@types/react-katex": "^3.0.4",
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.6"
+  }
+}
