@@ -1,0 +1,565 @@
+{
+  "Comment": "YouTube Learning Platform Video Processing Pipeline",
+  "StartAt": "ValidateVideo",
+  "States": {
+    "ValidateVideo": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${ValidateVideoFunction}",
+        "Payload.$": "$"
+      },
+      "ResultPath": "$.validationResult",
+      "TimeoutSeconds": 30,
+      "Retry": [
+        {
+          "ErrorEquals": ["Lambda.ServiceException", "Lambda.AWSLambdaException", "Lambda.SdkClientException"],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 3,
+          "BackoffRate": 2.0
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "HandleValidationFailure",
+          "ResultPath": "$.error"
+        }
+      ],
+      "Next": "CheckValidationResult"
+    },
+    "CheckValidationResult": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.validationResult.Payload.valid",
+          "BooleanEquals": true,
+          "Next": "UpdateProgressValidated"
+        }
+      ],
+      "Default": "HandleValidationFailure"
+    },
+    "UpdateProgressValidated": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${UpdateProgressFunction}",
+        "Payload": {
+          "userId.$": "$.userId",
+          "capsuleId.$": "$.capsuleId",
+          "step": "validation",
+          "status": "completed",
+          "progress": 10,
+          "metadata.$": "$.validationResult.Payload.metadata"
+        }
+      },
+      "ResultPath": null,
+      "Next": "ExtractTranscriptCheck"
+    },
+    "ExtractTranscriptCheck": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.options.extractTranscript",
+          "BooleanEquals": true,
+          "Next": "ExtractTranscript"
+        }
+      ],
+      "Default": "GenerateSummaryCheck"
+    },
+    "ExtractTranscript": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${ExtractTranscriptFunction}",
+        "Payload.$": "$"
+      },
+      "ResultPath": "$.transcriptResult",
+      "TimeoutSeconds": 120,
+      "Retry": [
+        {
+          "ErrorEquals": ["Lambda.ServiceException", "Lambda.AWSLambdaException", "Lambda.SdkClientException"],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 3,
+          "BackoffRate": 2.0
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "UpdateTranscriptFailed",
+          "ResultPath": "$.transcriptError"
+        }
+      ],
+      "Next": "UpdateProgressTranscript"
+    },
+    "UpdateProgressTranscript": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${UpdateProgressFunction}",
+        "Payload": {
+          "userId.$": "$.userId",
+          "capsuleId.$": "$.capsuleId",
+          "step": "transcript",
+          "status": "completed",
+          "progress": 25
+        }
+      },
+      "ResultPath": null,
+      "Next": "GenerateSummaryCheck"
+    },
+    "UpdateTranscriptFailed": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${UpdateProgressFunction}",
+        "Payload": {
+          "userId.$": "$.userId",
+          "capsuleId.$": "$.capsuleId",
+          "step": "transcript",
+          "status": "failed",
+          "error.$": "$.transcriptError"
+        }
+      },
+      "ResultPath": null,
+      "Next": "GenerateSummaryCheck"
+    },
+    "GenerateSummaryCheck": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.options.generateSummary",
+          "BooleanEquals": true,
+          "Next": "GenerateSummary"
+        }
+      ],
+      "Default": "GenerateFlashcardsCheck"
+    },
+    "GenerateSummary": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${GenerateSummaryFunction}",
+        "Payload.$": "$"
+      },
+      "ResultPath": "$.summaryResult",
+      "TimeoutSeconds": 180,
+      "Retry": [
+        {
+          "ErrorEquals": ["Lambda.ServiceException", "Lambda.AWSLambdaException", "Lambda.SdkClientException"],
+          "IntervalSeconds": 5,
+          "MaxAttempts": 2,
+          "BackoffRate": 2.0
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "UpdateSummaryFailed",
+          "ResultPath": "$.summaryError"
+        }
+      ],
+      "Next": "UpdateProgressSummary"
+    },
+    "UpdateProgressSummary": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${UpdateProgressFunction}",
+        "Payload": {
+          "userId.$": "$.userId",
+          "capsuleId.$": "$.capsuleId",
+          "step": "summary",
+          "status": "completed",
+          "progress": 40
+        }
+      },
+      "ResultPath": null,
+      "Next": "GenerateFlashcardsCheck"
+    },
+    "UpdateSummaryFailed": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${UpdateProgressFunction}",
+        "Payload": {
+          "userId.$": "$.userId",
+          "capsuleId.$": "$.capsuleId",
+          "step": "summary",
+          "status": "failed",
+          "error.$": "$.summaryError"
+        }
+      },
+      "ResultPath": null,
+      "Next": "GenerateFlashcardsCheck"
+    },
+    "GenerateFlashcardsCheck": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.options.generateFlashcards",
+          "BooleanEquals": true,
+          "Next": "GenerateFlashcards"
+        }
+      ],
+      "Default": "GenerateQuizCheck"
+    },
+    "GenerateFlashcards": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${GenerateFlashcardsFunction}",
+        "Payload.$": "$"
+      },
+      "ResultPath": "$.flashcardsResult",
+      "TimeoutSeconds": 240,
+      "Retry": [
+        {
+          "ErrorEquals": ["Lambda.ServiceException", "Lambda.AWSLambdaException", "Lambda.SdkClientException"],
+          "IntervalSeconds": 5,
+          "MaxAttempts": 2,
+          "BackoffRate": 2.0
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "UpdateFlashcardsFailed",
+          "ResultPath": "$.flashcardsError"
+        }
+      ],
+      "Next": "UpdateProgressFlashcards"
+    },
+    "UpdateProgressFlashcards": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${UpdateProgressFunction}",
+        "Payload": {
+          "userId.$": "$.userId",
+          "capsuleId.$": "$.capsuleId",
+          "step": "flashcards",
+          "status": "completed",
+          "progress": 60
+        }
+      },
+      "ResultPath": null,
+      "Next": "GenerateQuizCheck"
+    },
+    "UpdateFlashcardsFailed": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${UpdateProgressFunction}",
+        "Payload": {
+          "userId.$": "$.userId",
+          "capsuleId.$": "$.capsuleId",
+          "step": "flashcards",
+          "status": "failed",
+          "error.$": "$.flashcardsError"
+        }
+      },
+      "ResultPath": null,
+      "Next": "GenerateQuizCheck"
+    },
+    "GenerateQuizCheck": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.options.generateQuiz",
+          "BooleanEquals": true,
+          "Next": "GenerateQuiz"
+        }
+      ],
+      "Default": "GenerateMindMapCheck"
+    },
+    "GenerateQuiz": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${GenerateQuizFunction}",
+        "Payload.$": "$"
+      },
+      "ResultPath": "$.quizResult",
+      "TimeoutSeconds": 240,
+      "Retry": [
+        {
+          "ErrorEquals": ["Lambda.ServiceException", "Lambda.AWSLambdaException", "Lambda.SdkClientException"],
+          "IntervalSeconds": 5,
+          "MaxAttempts": 2,
+          "BackoffRate": 2.0
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "UpdateQuizFailed",
+          "ResultPath": "$.quizError"
+        }
+      ],
+      "Next": "UpdateProgressQuiz"
+    },
+    "UpdateProgressQuiz": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${UpdateProgressFunction}",
+        "Payload": {
+          "userId.$": "$.userId",
+          "capsuleId.$": "$.capsuleId",
+          "step": "quiz",
+          "status": "completed",
+          "progress": 75
+        }
+      },
+      "ResultPath": null,
+      "Next": "GenerateMindMapCheck"
+    },
+    "UpdateQuizFailed": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${UpdateProgressFunction}",
+        "Payload": {
+          "userId.$": "$.userId",
+          "capsuleId.$": "$.capsuleId",
+          "step": "quiz",
+          "status": "failed",
+          "error.$": "$.quizError"
+        }
+      },
+      "ResultPath": null,
+      "Next": "GenerateMindMapCheck"
+    },
+    "GenerateMindMapCheck": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.options.generateMindMap",
+          "BooleanEquals": true,
+          "Next": "GenerateMindMap"
+        }
+      ],
+      "Default": "GenerateNotesCheck"
+    },
+    "GenerateMindMap": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${GenerateMindMapFunction}",
+        "Payload.$": "$"
+      },
+      "ResultPath": "$.mindMapResult",
+      "TimeoutSeconds": 300,
+      "Retry": [
+        {
+          "ErrorEquals": ["Lambda.ServiceException", "Lambda.AWSLambdaException", "Lambda.SdkClientException"],
+          "IntervalSeconds": 5,
+          "MaxAttempts": 2,
+          "BackoffRate": 2.0
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "UpdateMindMapFailed",
+          "ResultPath": "$.mindMapError"
+        }
+      ],
+      "Next": "UpdateProgressMindMap"
+    },
+    "UpdateProgressMindMap": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${UpdateProgressFunction}",
+        "Payload": {
+          "userId.$": "$.userId",
+          "capsuleId.$": "$.capsuleId",
+          "step": "mindMap",
+          "status": "completed",
+          "progress": 90
+        }
+      },
+      "ResultPath": null,
+      "Next": "GenerateNotesCheck"
+    },
+    "UpdateMindMapFailed": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${UpdateProgressFunction}",
+        "Payload": {
+          "userId.$": "$.userId",
+          "capsuleId.$": "$.capsuleId",
+          "step": "mindMap",
+          "status": "failed",
+          "error.$": "$.mindMapError"
+        }
+      },
+      "ResultPath": null,
+      "Next": "GenerateNotesCheck"
+    },
+    "GenerateNotesCheck": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.options.generateNotes",
+          "BooleanEquals": true,
+          "Next": "GenerateNotes"
+        }
+      ],
+      "Default": "FinalizeProcessing"
+    },
+    "GenerateNotes": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${GenerateNotesFunction}",
+        "Payload.$": "$"
+      },
+      "ResultPath": "$.notesResult",
+      "TimeoutSeconds": 180,
+      "Retry": [
+        {
+          "ErrorEquals": ["Lambda.ServiceException", "Lambda.AWSLambdaException", "Lambda.SdkClientException"],
+          "IntervalSeconds": 5,
+          "MaxAttempts": 2,
+          "BackoffRate": 2.0
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "UpdateNotesFailed",
+          "ResultPath": "$.notesError"
+        }
+      ],
+      "Next": "UpdateProgressNotes"
+    },
+    "UpdateProgressNotes": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${UpdateProgressFunction}",
+        "Payload": {
+          "userId.$": "$.userId",
+          "capsuleId.$": "$.capsuleId",
+          "step": "notes",
+          "status": "completed",
+          "progress": 95
+        }
+      },
+      "ResultPath": null,
+      "Next": "FinalizeProcessing"
+    },
+    "UpdateNotesFailed": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${UpdateProgressFunction}",
+        "Payload": {
+          "userId.$": "$.userId",
+          "capsuleId.$": "$.capsuleId",
+          "step": "notes",
+          "status": "failed",
+          "error.$": "$.notesError"
+        }
+      },
+      "ResultPath": null,
+      "Next": "FinalizeProcessing"
+    },
+    "FinalizeProcessing": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${FinalizeProcessingFunction}",
+        "Payload.$": "$"
+      },
+      "ResultPath": "$.finalizeResult",
+      "TimeoutSeconds": 60,
+      "Retry": [
+        {
+          "ErrorEquals": ["Lambda.ServiceException", "Lambda.AWSLambdaException", "Lambda.SdkClientException"],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 3,
+          "BackoffRate": 2.0
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "Next": "HandleProcessingFailure",
+          "ResultPath": "$.finalizeError"
+        }
+      ],
+      "Next": "ProcessingComplete"
+    },
+    "ProcessingComplete": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${UpdateProgressFunction}",
+        "Payload": {
+          "userId.$": "$.userId",
+          "capsuleId.$": "$.capsuleId",
+          "step": "finalization",
+          "status": "completed",
+          "progress": 100,
+          "completed": true
+        }
+      },
+      "ResultPath": null,
+      "Next": "Success"
+    },
+    "Success": {
+      "Type": "Succeed",
+      "Comment": "Video processing completed successfully"
+    },
+    "HandleValidationFailure": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${UpdateProgressFunction}",
+        "Payload": {
+          "userId.$": "$.userId",
+          "capsuleId.$": "$.capsuleId",
+          "step": "validation",
+          "status": "failed",
+          "error.$": "$.error",
+          "failed": true
+        }
+      },
+      "ResultPath": null,
+      "Next": "ValidationFailure"
+    },
+    "HandleProcessingFailure": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${UpdateProgressFunction}",
+        "Payload": {
+          "userId.$": "$.userId",
+          "capsuleId.$": "$.capsuleId",
+          "step": "finalization",
+          "status": "failed",
+          "error.$": "$.finalizeError",
+          "failed": true
+        }
+      },
+      "ResultPath": null,
+      "Next": "ProcessingFailure"
+    },
+    "ValidationFailure": {
+      "Type": "Fail",
+      "Cause": "Video validation failed",
+      "Error": "ValidationError"
+    },
+    "ProcessingFailure": {
+      "Type": "Fail",
+      "Cause": "Video processing failed during finalization",
+      "Error": "ProcessingError"
+    }
+  }
+}
